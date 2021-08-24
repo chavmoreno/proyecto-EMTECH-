@@ -1,3 +1,26 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# # <center>Proyecto 1</center>
+# <center>Autor: Salvador Moreno Tena</center>
+
+# ## Índice
+# + **Introducción**  
+# + **1 Productos más vendidos y productos rezagados**  
+#   + *1.1 Productos más vendidos*
+#   + *1.2 Productos con mayores búsquedas*
+#   + *1.3 Productos con menores ventas*
+#   + *1.4 Productos menos buscados*
+# + **2 Productos por reseña en el servicio**
+#   + *2.1 Productos con mejores reseñas*
+#   + *2.2 Productos con peores reseñas*
+# + **3 Total de ingresos y ventas promedio mensuales,total anual y meses con más ventas al año**
+# + **Solución al problema**
+# + **Conclusión**
+
+# In[1]:
+
+
 """
 This is the LifeStore_SalesList data:
 lifestore_searches = [id_search, id product]
@@ -1425,3 +1448,403 @@ lifestore_searches = [
     [1032, 95],
     [1033, 95]
 ]
+
+
+# # Introducción
+# El objetivo de este proyecto es poner en práctica lo aprendido en el curso *Fundamentos de Programación con Python*, en donde principalmente se revisaron los bloques de *Fundamentos de programación* y *Control de flujo de un programa*.
+# 
+# Inicialmente podrá ver una sencilla interfaz del usuario para iniciar sesión o crear usuario, y que así el usuario pueda ver el reporte.
+# 
+# Para este proyecto se examinarán las listas establecidas previamente, donde se indican los productos, ventas por producto y búsquedas por producto de una tienda online denominada como **LifeStore**. Bajo la examinación y análisis de estas listas se buscará una solución al problema que ha tenido la tienda tanto en las ventas, como en las búsquedas de los productos en los últimos meses.
+# 
+# Debido a que por medio de las listas normalmente no se puede ver muy claramente la información (cuando es mucha), se utilizará el paquete *matplotlib.pyplot*.
+# 
+# Finalmente, si desea observar el código desarrollado, [click aquí](https://github.com/chavmoreno/proyecto1/blob/main/PROYECTO-01-%20MORENO-SALVADOR.py).
+
+# In[2]:
+
+
+usuarios = ['pedrito']
+contraseñas = ['123']
+x = 1
+while x==1:
+    pregunta = input('Escoja lo que desea hacer:\na) Crear usuario\nb)Entrar con usuario existente\n:')  
+    
+    if pregunta == 'b':
+        usuario = input('Ingrese su usuario: ')
+        contraseña = input('Ingrese su contraseña: ')
+        
+        if usuario in usuarios:
+            
+            if contraseña==contraseñas[usuarios.index(usuario)]:
+                print('Bienvenido ' + usuario)
+                x=0
+            
+            else:
+                print('\nContraseña incorrecta, inténtelo de nuevo')
+                x=1
+                
+        else:
+            print('\nUsuario no reconocido, inténtelo de nuevo')
+            x=1
+           
+    elif pregunta == 'a':
+        usuario = input('Ingrese su nuevo usuario: ')
+        contraseña = input('Ingrese su contraseña: ')
+        contraseña_2 = input('Ingrese su contraseña nuevamente: ')
+        
+        if contraseña == contraseña_2:
+            usuarios.append(usuario)
+            contraseñas.append(contraseña)
+            print('\nBienvenido ' + usuario)
+            x = 0
+       
+        else:
+            print('\nContraseñas incompatibles, reinténtelo')
+            x=1
+                   
+    else: 
+        print('\nOpción inválida, reinténtelo')
+        x=1
+
+
+# ## 1. Productos más vendidos y productos rezagados
+# En esta primera sección se hace un análisis de los productos con más y menos ventas, así como con más y menos búsquedas. Con el fin de hacer una búsqueda exhaustiva para finalmente dar las recomendaciones.
+
+# In[3]:
+
+
+from datetime import datetime
+
+
+# In[4]:
+
+
+# Listas de lifestore_products
+id_product,name,price,category,stock = list(zip(*lifestore_products))
+categories_u = list(dict.fromkeys(category))
+
+
+#Listas de lifestore_searches
+id_search,id_product_s=list(zip(*lifestore_searches))
+    
+
+#Listas de lifestore_sales    
+id_sale,id_product_sa,score,date,refund= list(zip(*lifestore_sales))
+mes=[]
+for element in date:
+    mes.append(datetime.strptime(element, '%d/%m/%Y').month)
+    
+
+#Lista para ver las búsquedas por producto
+values = set(id_product_s)
+val = [[y for y in id_product_s if y==x]for x in values]
+    
+bus=[]
+for element in val:
+    bus.append(sum(element))
+
+bus_xproducto =[]
+for e,i in zip(values,bus):
+    bus_xproducto.append([str(e),i])
+
+top_50_products_with_searches = sorted(bus_xproducto, reverse = True, key= lambda x: x[1])[0:99]  
+    
+
+#Lista para ver las ventas por producto
+prices=[]
+for e in id_product_sa:
+    for i in id_product:
+        if e == i:
+            prices.append(price[id_product.index(i)])
+        else:
+            continue
+
+prices_prod = []
+for e,i in zip(prices, id_product_sa):
+    prices_prod.append([e,i])
+
+values = set(map(lambda x:x[1],prices_prod))
+val = [[y[0] for y in prices_prod if y[1]==x]for x in values]
+    
+ventas_x=[]
+for element in val:
+    ventas_x.append(sum(element))
+
+ventas_xproducto =[]
+for e,i in zip(values,ventas_x):
+    ventas_xproducto.append([str(e),i])
+    
+top_50_products_with_sales = sorted(ventas_xproducto, reverse = True, key= lambda x: x[1])[0:49]   
+
+
+# ### 1.1 Productos más vendidos
+# Se muestran los 50 productos más vendidos. Para fines prácticos y de ahorro de espacio, se muestra un gráfico con los 10 productos más vendidos por Id (no por nombre).
+
+# In[5]:
+
+
+print('Los 50 productos con mayores ventas en $ son:\n')
+for element in top_50_products_with_sales:
+    print('Id del Producto:', element[0], ' Cantidad vendida: $',element[1])
+
+
+# In[6]:
+
+
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+producto, ventas = list(zip(*top_50_products_with_sales[:9]))
+plt.barh(producto , ventas)
+plt.title('Top 10 productos con mayores ventas')
+plt.xlabel('Ventas en $')
+plt.ylabel('ID del producto')
+plt.rc('xtick',labelsize=10)
+plt.rc('ytick',labelsize=10)
+
+
+# ### 1.2 Productos con mayores búsquedas
+# Se muestran los 100 productos con más búsquedas. Para fines prácticos y de ahorro de espacio, se muestra un gráfico con los 10 productos con más búsquedas por Id (no por nombre).
+
+# In[7]:
+
+
+print('Los 100 productos con mayores búsquedas son:\n')
+for element in top_50_products_with_searches:
+    print('ID del Producto:', element[0], ' Búsquedas:',element[1])
+
+
+# In[8]:
+
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+producto, bq = list(zip(*top_50_products_with_searches[:9]))
+plt.barh(producto , bq)
+plt.title('Top 10 productos con más búsquedas')
+plt.xlabel('Búsquedas')
+plt.ylabel('ID del producto')
+plt.rc('xtick',labelsize=10)
+plt.rc('ytick',labelsize=10)
+
+
+# ### 1.3 Productos con menores ventas
+# Se muestran los 50 productos menos vendidos. Para fines prácticos y de ahorro de espacio, se muestra un gráfico con los 10 productos menos vendidos por Id (no por nombre).
+
+# In[9]:
+
+
+worst_50_products_with_searches = sorted(bus_xproducto, reverse = False, key= lambda x: x[1])[0:99]
+
+worst_50_products_sales = sorted(ventas_xproducto, reverse = False, key= lambda x: x[1])[0:99]   
+
+print('Los 50 productos con menores ventas en $ son:\n')
+for element in worst_50_products_sales:
+    print('ID del Producto:', element[0], ' Cantidad vendida: $',element[1])
+    
+get_ipython().run_line_magic('matplotlib', 'inline')
+producto2, ventas2 = list(zip(*worst_50_products_sales[:9]))
+plt.barh(producto2 , ventas2)
+plt.title('Top 10 productos con peores ventas')
+plt.xlabel('Ventas en $')
+plt.ylabel('ID del producto')
+plt.rc('xtick',labelsize=10)
+plt.rc('ytick',labelsize=10)
+
+
+# ### 1.4 Productos menos buscados
+# Se muestran los 100 productos menos buscados. Para fines prácticos y de ahorro de espacio, se muestra un gráfico con los 10 productos menos buscados por Id (no por nombre).
+
+# In[10]:
+
+
+print('Los 100 productos con menores búsquedas son:\n')
+for element in worst_50_products_with_searches:
+    print('ID del Producto:', element[0], ' Búsquedas:',element[1])
+
+
+# In[11]:
+
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+producto2, bq2 = list(zip(*worst_50_products_with_searches[:9]))
+plt.barh(producto2 , bq2)
+plt.title('Top 10 productos menos buscados')
+plt.xlabel('Búsquedas')
+plt.ylabel('ID del producto')
+plt.rc('xtick',labelsize=10)
+plt.rc('ytick',labelsize=10)
+
+
+# ## 2. Productos por reseña en el servicio
+# En esta sección se analizarán a los mejores y peores productos según las reseñas de los clientes, incluyendo información sobre si hubo o no hubo devoluciones.
+
+# ### 2.1 Productos con mejores reseñas
+# Se muestran los 20 productos con mejor reseña, igualmente se muestra gráficamente para una mejor comprensión y una toma de decisión más fácil.
+
+# In[12]:
+
+
+producto_score = []
+for e,i in zip(score,id_product_sa):
+    producto_score.append([e,i])
+
+values = set(map(lambda x:x[1],producto_score))
+val = [[y[0] for y in producto_score if y[1]==x]for x in values]
+
+promedios=[]
+for element in val:
+    promedios.append(round(sum(element)/len(element),2))
+    
+promedios_con_producto = []
+for e1, e2 in zip(list(values), promedios):
+    promedios_con_producto.append([str(e1),e2])
+
+sorted_promedios_con_producto = sorted(promedios_con_producto, reverse = True, key= lambda x: x[1])
+mejores_20_productos = sorted_promedios_con_producto[:19]
+peores_20_productos = sorted(promedios_con_producto, reverse = False, key= lambda x: x[1])[:19]
+
+prod,res = list(zip(*mejores_20_productos))
+for e,i in zip(prod,res):
+    print('ID del producto:',e,'- Reseña promedio:',i)
+
+
+# In[13]:
+
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+p,q = list(zip(*mejores_20_productos))
+plt.bar(p,q)
+plt.title('Top 20 productos con mejor calificación')
+plt.xlabel('ID del producto')
+plt.ylabel('Calificación')
+plt.rc('xtick',labelsize=10)
+plt.rc('ytick',labelsize=10)
+
+
+# ### 2.2 Productos con peores reseñas
+# Se muestran los 20 productos con peor reseña, igualmente se muestran gráficamente únicamente 10 para una mejor comprensión y una toma de decisión más fácil.
+
+# In[14]:
+
+
+prod,res = list(zip(*peores_20_productos))
+for e,i in list(zip(prod,res)):
+    print('ID del producto:',e,'- Reseña promedio:',i)
+
+
+# In[15]:
+
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+p,q = list(zip(*peores_20_productos[:9]))
+plt.bar(p,q)
+plt.title('Top 10 productos con peor calificación')
+plt.xlabel('ID del producto')
+plt.ylabel('Calificación')
+plt.rc('xtick',labelsize=10)
+plt.rc('ytick',labelsize=10)
+
+
+# ## 3. Total de ingresos y ventas promedio mensuales,total anual y meses con más ventas al año
+# Para hacer el análisis del año es necesario ver las ventas promedio, totales y ver qué meses se vende más y menos para ver en cuáles meses se debe impulsar más la venta.
+# 
+
+# In[16]:
+
+
+print('Ventas totales: $',sum(ventas_x))
+print('\n')
+
+precios_sa=[]
+for e in id_product_sa:
+    for i in id_product:
+        if e == i:
+            precios_sa.append(price[id_product.index(i)])
+        else:
+            continue
+
+precios_mes = []
+for e,i in zip(precios_sa, mes):
+    precios_mes.append([e,i])
+
+values1 = set(map(lambda x:x[1],precios_mes))
+val1 = [[y[0] for y in precios_mes if y[1]==x]for x in values1]
+    
+promedios_xmes=[]
+for element in val1:
+    promedios_xmes.append(round(sum(element)/len(element),2))
+    
+meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Noviembre']
+                              
+promedios_xmes_mes = []
+for e1, e2 in zip(meses, promedios_xmes):
+    promedios_xmes_mes.append([str(e1),e2])
+    print('Mes:',e1,'- Venta promedio del mes: $',e2)
+    
+get_ipython().run_line_magic('matplotlib', 'inline')
+plt.bar(meses, promedios_xmes)
+plt.title('Promedio de ventas por mes por venta')
+plt.xlabel('Mes')
+plt.ylabel('Promedio por venta en $')
+plt.rc('xtick',labelsize=10)
+plt.rc('ytick',labelsize=10)
+plt.xticks(rotation =45)
+
+
+# In[17]:
+
+
+ventas_xmes=[]
+for element in val1:
+    ventas_xmes.append(sum(element))
+    
+ventas_xmes_mes = []
+for e1, e2 in zip(meses, ventas_xmes):
+    ventas_xmes_mes.append([str(e1),e2])
+    print('Mes:',e1,'- Venta del mes: $',e2)
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+plt.bar(meses, ventas_xmes)
+plt.title('Ventas por mes')
+plt.xlabel('Mes')
+plt.ylabel('Venta en $')
+plt.rc('xtick',labelsize=10)
+plt.rc('ytick',labelsize=10)
+plt.xticks(rotation =45)
+
+
+# ## Solución al problema
+# Como se puede observar en las últimas dos gráficas, a pesar de que Septiembre y Noviembre tienen las mejores venntas promedio, también tienen (junto con Agosto) las ventas totales más bajas de todos los meses. Lo único que puede explicar esto es debido a que tienen muy pocas ventas, pero las pocas ventas que se lograron concretar fue por montos elevados. Para resolver esto se podría diseñar una estrategia de descuentos para que la gente se anime a comprar más en esos meses. Otra posible solución podría ser armar una campaña publicitaria grande de Agosto a Noviembre.
+# 
+# Otra área de oportunidad para la empresa es reducir la distancia entre los productos más vendidos, ya que la distancia entre el más vendido y el segundo más vendido es de casi el doble. Para que los demás productos se puedan emparejar con el más vendido, lo óptimo sería dar promociones en el resto de los productos (probablemente un 3X2) o bien ofrecer descuento en cualquier producto en la compra del más vendido.
+# 
+# Para las búsquedas lo ideal sería ampliar mejorar los algoritmos de recomendaciones (tanto internamente como externamente) para que así la mayoría de los productos sean recomendados y aparezcan en las búsquedas.
+
+# ## Conclusión
+# En conclusión, es una empresa que al parecer ya está bien establecida, sin embargo; para que la empresa pueda ser rentable a largo plazo deberían tratar de que las ventas crecieran mes a mes y que no hubiera tanta variabilidad entre los meses, y mucho menos que bajen sus ventas entre un mes y otro. Para esto es importante seguir las soluciones recomendadas arriba.
+
+# In[18]:
+
+
+from IPython.display import HTML
+
+HTML('''<script>
+code_show=true; 
+function code_toggle() {
+ if (code_show){
+ $('div.input').hide();
+ } else {
+ $('div.input').show();
+ }
+ code_show = !code_show
+} 
+$( document ).ready(code_toggle);
+</script>
+The raw code for this IPython notebook is by default hidden for easier reading.To toggle on/off the raw code, click <a href="javascript:code_toggle()">here</a>''')
+
+
+# In[ ]:
+
+
+
+
